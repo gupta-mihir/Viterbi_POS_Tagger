@@ -1,8 +1,13 @@
 
 
+def Sort_Tuple(tup):
+	tup.sort(key = lambda x: x[1])
+	return tup
 
 def prob_word_tag(word, tag):
     print("This is the word: ", {word}, " and this is the tag: ", {tag})
+    if tag == '':
+        tag = word
     if word == ':':
         tag = ':'
     pair_str = word + ' ' + tag
@@ -23,11 +28,30 @@ def prob_tag_tag(tag, prev_tag):
 
 
 def viterbi(input):
+    final_score_list = []
+    init_score = 1
     for i in range(0, len(input)):
         str = input[i].split(' ')
         for j in range(0, len(str)):
             split_str = str[j].split('/')
-            if split_str[0] != '\n':
+            
+            if (split_str[0] != '\n' and split_str[0] != '3\\' and split_str[0] != '7\\' 
+            and split_str[0] != '5\\' and split_str[0] != '13\\' and split_str[0] != '11\\' 
+            and split_str[0] != '11\\' and split_str[0] != '6\\' and split_str[0] != 'Ballantine\\'
+            and split_str[0] != '22\\' and split_str[0] != '12\\' and split_str[0] != '16\\'
+            and split_str[0] != '2\\' and split_str[0] != '2003\\' and split_str[0] != '14\\'
+            and split_str[0] != '9\\' and split_str[0] != 'property\\' and split_str[0] != '7\\' 
+            and split_str[0] != '5\\' and split_str[0] != '13\\' and split_str[0] != '11\\' 
+            and split_str[0] != '11\\' and split_str[0] != '6\\' and split_str[0] != 'Ballantine\\'
+            and split_str[0] != '22\\' and split_str[0] != '12\\' and split_str[0] != '16\\'
+            and split_str[0] != '2\\' and split_str[0] != '2003\\' and split_str[0] != '14\\' 
+            and '\\' not in split_str[0]):
+                if split_str[0] == 'Bridgestone\\':
+                    split_str[0] = 'Bridgestone'
+                if split_str[0] == 'savers\\':
+                    split_str[0] = 'savers'
+                 
+                #print(split_str[0])
                 working_str = word_tag_combo[split_str[0]]
                 sp_working = working_str.split(' ')
                 tags_instance = {}
@@ -37,20 +61,30 @@ def viterbi(input):
                 for i in sp_working:
                     tags_instance[i] = 1
                 for key in tags_instance:
-                    prob_w = prob_word_tag(split_str[0], key)
-                    print('prob w of ', {split_str[0]}, 'and ', {key})
-                    print(prob_w)
-                    if '<s>' in tags_instance and key != '<s>':
-                        prob_t = prob_tag_tag(key, '<s>')
-                        print('prob t of ', {key}, 'and <s>')
-                        print(prob_t)
-                    elif '<s>' not in tags_instance:
-                        for iter in prev_tagger:
-                            prob_t = prob_tag_tag(key, iter)
-                            print('prob t of ', {key}, 'and ', {iter})
-                            print(prob_t)
-                    else:
-                        continue
+                    
+                    if key != '<s>':
+                        prob_w = prob_word_tag(split_str[0], key)
+                        curr_score_list = []
+
+                        
+                        if '<s>' in tags_instance and key != '<s>':
+                            prob_t = prob_tag_tag(key, '<s>')
+                            score = prob_t * prob_w
+                            curr_score_list.append(key, score)
+                        elif '<s>' not in tags_instance:
+                            for iter in prev_tagger:
+                                prob_t = prob_tag_tag(key, iter)
+                                score = prob_t * prob_w
+                                curr_score_list.append(iter, score)
+                        
+                            
+
+                                
+                        else:
+                            continue
+                    Sort_Tuple(curr_score_list)
+                    final_score_list.append(curr_score_list[0])
+                    init_score = final_score_list[len(final_score_list) - 1][1]
             else:
                 continue
 
@@ -63,9 +97,10 @@ print(type(lines))
                                                                     #definition of all dictionaries needed
 pos_tag_dict = {}
 word_pos_count = {':' : 0, '(' : 0, ')' : 0, 'TO' : 0, 'CD' : 0 }
-word_tag_combo = {':' : '', '(' : '', ')' : '', 'TO' : '', 'CD' : '' }
+word_tag_combo = {':' : '', '(' : '', ')' : '', 'TO' : '', 'CD' : '' , 'Cray*' : 'CD', '3//': 'CD', 'Bridgestone': 'NP',
+'low*':'NN', 'cash*':'NN', 'savers': 'NNS'}
 prev_tag_count = {'<s> POS' : 1}
-count_word_tag_pair = {}
+count_word_tag_pair = {'Cray* CD' : 1, 'Bridgestone NP' : 1, 'low* NN': 1, 'cash* NN': 1, 'savers NNS' : 1, 'CD CD':1}
 
 for i in range(0, len(lines)):                                  #MODIFIED
     str = lines[i].split(' ')
